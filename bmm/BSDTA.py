@@ -45,7 +45,6 @@ def theor(freq,f,z,S,Se,Nm,N):
 def PSD_FORMAT(Acc,fs,fo,fi):
 #    default parameters fo , fo equal to 0 and fi
     try:
-        print('Entro')
         freq,Yo = signal.welch(Acc[:,0],fs,nperseg=int(len(Acc[:,0])/4)+1)
         Y = np.zeros((len(Yo),len(Acc[0,:])))
         for i in range(len(Y[0,:])):

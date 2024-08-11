@@ -1,3 +1,7 @@
 .env
 si_env/
 data/
+__pycache__/
+.DS_Store
+.VSCode/
+bmm/__pycache__/
