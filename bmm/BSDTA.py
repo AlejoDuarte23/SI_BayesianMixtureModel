@@ -1,8 +1,16 @@
 import numpy as np 
 import matplotlib.pyplot as plt
 import scipy
-from scipy import signal
+import numdifftools as nd
+import pandas as pd 
+import seaborn as sb    
+import emcee
+import corner
 
+from scipy.optimize import minimize
+from scipy import signal
+from scipy import optimize
+from scipy.stats import uniform,norm
 
 #------------------------------ 1.Theor PSD ----------------------------------#
 def SDK(freq,f,z,S,Nm,N):    
@@ -97,7 +105,6 @@ def Modal_id(Yxx,freq_id,Nc,N,fo,dampo,foo,fii):
     xo = x[0:4]
     xo[0] =  freq_id[np.where(Yxx== np.max(Yxx))[0][0]]
     def posterior(x):
-        from scipy.stats import uniform,norm
         
         post = like(Yxx,freq_id,x[0],x[1],x[2],x[3],phi,1,N,Nc)
              # -np.log(norm.pdf(x[0],fo,10**-2)) -np.log(norm.pdf(x[1],dampo,10**-4))
@@ -105,10 +112,8 @@ def Modal_id(Yxx,freq_id,Nc,N,fo,dampo,foo,fii):
             
     likelyhood = lambda x:posterior(x)
     #---------------- Optimize likelyhood ----------------#
-    from scipy import optimize
     opt = optimize.fmin(func=likelyhood ,x0=xo,maxiter= 1000,xtol=0.000001, ftol=0.000001)
     #---------------- Uncertainty Quanty. ----------------#
-    import numdifftools as nd
     H = nd.Hessdiag(likelyhood)(opt)
     try:
         C =np.linalg.inv(np.diag(H))
@@ -181,7 +186,6 @@ def Stage2VSDA(PHI,M,Se):
 #---------------------------- 16. Optmal Values of Modeshapes  ---------------#  
 
 def Opti_Modeshape(opt,freq_id,Y,Nc):
-    from scipy.optimize import minimize
     M,PHI,s1 = ModeShapeTSBSBDA(opt,freq_id,Y,Nc)
 
     lik = lambda phi:Stage2VSDA(phi,M,opt[3])
@@ -191,12 +195,10 @@ def Opti_Modeshape(opt,freq_id,Y,Nc):
     cons = {'type':'eq', 'fun': const}
     sol = minimize(lik,PHI, constraints=cons)
     
-    import numdifftools as nd
     H = nd.Hessian(lik)(sol.x)
     
     C =np.linalg.inv(H)
-    import pandas as pd 
-    import seaborn as sb
+
     Ptheta = np.random.multivariate_normal(sol.x, C, size=100)
     Ptheta2 = pd.DataFrame(Ptheta)
     plt.figure()
@@ -304,7 +306,6 @@ def selec_band(fopt,r):
             
 #-------------------------- 22- pymc implementation --------------------------#
 def MCMCM_lIKE(Y,freq_id,f,z,S,Se,phi,Nm,N,Nc):
-    import pymc3 as pm
 
     def posterior(f,z,S,Se):        
         post = -like(Y,freq_id,f,z,S,Se,phi,1,N,Nc)
@@ -318,7 +319,6 @@ def MCMCM_lIKE(Y,freq_id,f,z,S,Se,phi,Nm,N,Nc):
 
 
 #------------------------------  slampler ------------------------------------#
-import emcee
 def walkers(xopt,N,Nc,Y,freq_id,Nsamples):
 
     phi= [0.91,0.901,0.9,0.91,0.901,0.9,0.91,0.901,0.9]
@@ -364,7 +364,6 @@ def walkers(xopt,N,Nc,Y,freq_id,Nsamples):
     sampler.run_mcmc(pos, Nsamples, progress=True)
     samples = sampler.get_chain()
     flat_samples = sampler.get_chain(discard=100,flat=True)
-    import corner
     labels = ["f", "z", "log10(S)", "log10(Se)"]
     fig = corner.corner(flat_samples, labels=labels);
     return flat_samples

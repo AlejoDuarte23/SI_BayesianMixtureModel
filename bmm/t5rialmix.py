@@ -1,10 +1,9 @@
 import itertools
-
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+from scipy import linalg
 from sklearn import mixture
 
 color_iter = itertools.cycle(['navy', 'c', 'cornflowerblue', 'gold',

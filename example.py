@@ -4,16 +4,20 @@ import Function_Footbridge as FF
 import numpy as np 
 import matplotlib.pyplot as plt
 import MDOF_LSQ as LSQ
+import itertools
+import matplotlib as mpl
 
-
-
+from matplotlib.colors import LogNorm
+from sklearn import mixture
+from scipy import linalg
+from sklearn import mixture
+from scipy import signal
+from matplotlib.colors import LogNorm
 
 #.---------------------- Visual Stuff ----------------------------------------#
 
 
-import itertools
-from scipy import linalg
-import matplotlib as mpl
+
 color_iter = itertools.cycle(['navy', 'c', 'cornflowerblue', 'gold',
                               'darkorange'])
 def plot_results(X, Y_, means, covariances, index, title):
@@ -57,9 +61,7 @@ if case == 1:
     Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fs,fo,fi)
     opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,fopt[-1],dampopt[-1],fo,fi)
     samples = BS.walkers(opt,N,Nc,Yxx,freq_id,6000)
-    from matplotlib.colors import LogNorm
     plt.figure()
-    from sklearn import mixture
     X = samples[:,:2]
     gmm = mixture.GaussianMixture(n_components=3, covariance_type='full').fit(X)
     
@@ -83,15 +85,12 @@ if case == 2:
     Acc, Nc, Nd = FF.load_Data(fn,1,-1,0,-1)
     fsi = 95
     Ni = int(Acc.shape[0]*fsi/fs)
-    from scipy import signal
     Acc = signal.resample(Acc, Ni)
     fn,zeta ,phi,fopt,dampopt = SSI.SSI_COV_AD(Acc,fsi,10,Nc,30,4)
     Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fsi,fo,fi)
     opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,fopt[-1],dampopt[-1],fo,fi)
     samples=BS.walkers(opt,N,Nc,Yxx,freq_id,3000)
-    from matplotlib.colors import LogNorm
     plt.figure()
-    from sklearn import mixture
     X = samples[:,:2]
     gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
     

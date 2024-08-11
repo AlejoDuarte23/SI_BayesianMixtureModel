@@ -1,12 +1,13 @@
 import scipy
 import numpy as np
 import matplotlib.pyplot as plt
-# import Modal_Analisis as MA
-from tqdm import tqdm
 import sys
 import warnings
 import scipy.stats as stats
+
+from scipy.optimize import least_squares
 from scipy import signal
+from tqdm import tqdm
 
 Nm = 5
 #--------------------------- 0. Turn off warnings -----------------------------#
@@ -122,6 +123,5 @@ def MDOF_LSQ(ACC,fs,fo,fi):
           -3,-1,-1,-3,-3,1]
     
     likelyhood = lambda xo,freq,si: likelihood(xo,freq,si,Nm,N)
-    from scipy.optimize import least_squares
     opt = least_squares(likelyhood ,xo,loss='cauchy',f_scale=0.1,args=(freq_id, s1_id))
     plot_psd(opt.x,Nm,N,freq_id,s1_id)

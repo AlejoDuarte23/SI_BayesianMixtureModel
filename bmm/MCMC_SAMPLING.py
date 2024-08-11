@@ -1,3 +1,4 @@
+import corner
 import numpy as np
 import matplotlib.pyplot as plt
 import emcee
@@ -22,7 +23,6 @@ def sample_MCMC(pos,nwalkers, ndim, log_probability, argso,Nsamples):
     return samples,sampler
 
 def plotresuls(sampler,labels):
-    import corner
     flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
     print(flat_samples.shape)
     fig = corner.corner(flat_samples, labels=labels);
