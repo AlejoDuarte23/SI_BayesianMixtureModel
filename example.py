@@ -9,12 +9,12 @@ from sklearn import mixture
 from scipy import linalg
 from sklearn import mixture
 from scipy import signal
-from matplotlib.colors import LogNorm
 
-#.---------------------- Visual Stuff ----------------------------------------#
+mpl.use('Qt5Agg')
+mpl.pyplot.ion()
 
 
-
+#%% Util functions
 color_iter = itertools.cycle(['navy', 'c', 'cornflowerblue', 'gold',
                               'darkorange'])
 def plot_results(X, Y_, means, covariances, index, title):
@@ -47,50 +47,39 @@ def load_Data(fn,cho,chi,i,j):
     Nd = Acc.shape[0]
     return Acc, Nc, Nd
  
-#.---------------------- Model  ----------------------------------------#
-    
-    
-case = 2
+#%%    
+match 'mixture':
+    case 'single':
+        fn = 'data/Sp_Acc_11_02_12_7_18.txt'
+        fs = 95
+    #---------------------- 1.  Load data ----------------------------------------# 
+        fo = 8#16
+        fi = 9#19
+        Acc, Nc, Nd = load_Data(fn,0,9,0,-1)
+        Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fs,fo,fi)
+        opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,8.72,0.02,fo,fi)
+        samples = BS.walkers(opt,N,Nc,Yxx,freq_id,6000)
+        
+   
 
-
-if case == 1:
-    fn = 'data/Sp_Acc_11_02_12_7_18.txt'
-    fs = 95
-#---------------------- 1.  Load data ----------------------------------------# 
-    fo = 16#8#16
-    fi = 19#9#19
-    Acc, Nc, Nd = load_Data(fn,0,9,0,-1)
-    Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fs,fo,fi)
-    opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,18.3,0.02,fo,fi)
-    samples = BS.walkers(opt,N,Nc,Yxx,freq_id,6000)
-    plt.figure()
-    X = samples[:,:2]
-    gmm = mixture.GaussianMixture(n_components=3, covariance_type='full').fit(X)
-    
-    plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 0,'Gaussian Mixture')
-    X = np.vstack((samples[:,0],samples[:,2])).T
-    gmm = mixture.GaussianMixture(n_components=3, covariance_type='full').fit(X)
-    plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 1,'Gaussian Mixture')
-
-
-if case == 2:
-    fn = 'data/DAQ_12_7_18.txt'
-    fs = 1.6516*10**3
-#---------------------- 1.  Load data ----------------------------------------#
-    fo = 16#8#8.8#14#16
-    fi = 19#10#10#16#19 
-    Acc, Nc, Nd = load_Data(fn,1,-1,0,-1)
-    fsi = 95
-    Ni = int(Acc.shape[0]*fsi/fs)
-    Acc = signal.resample(Acc, Ni)
-    Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fsi,fo,fi)
-    opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,18.3,0.05,fo,fi)
-    samples=BS.walkers(opt,N,Nc,Yxx,freq_id,1000)
-    plt.figure()
-    X = samples[:,:2]
-    gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
-    
-    plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 0,'Gaussian Mixture')
-    X = np.vstack((samples[:,0],samples[:,2])).T
-    gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
-    plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 1,'Gaussian Mixture')
+    case 'mixture':
+        fn = 'data/DAQ_12_7_18.txt'
+        fs = 1.6516*10**3
+    #---------------------- 1.  Load data ----------------------------------------#
+        fo = 16#8#8.8#14#16
+        fi = 19#10#10#16#19 
+        Acc, Nc, Nd = load_Data(fn,1,-1,0,-1)
+        fsi = 95
+        Ni = int(Acc.shape[0]*fsi/fs)
+        Acc = signal.resample(Acc, Ni)
+        Yxx,freq_id,N = BS.PSD_FORMAT(Acc,fsi,fo,fi)
+        opt,C = BS.Modal_id(Yxx,freq_id,Nc,N,18.3,0.05,fo,fi)
+        samples=BS.walkers(opt,N,Nc,Yxx,freq_id,6000)
+        plt.figure()
+        X = samples[:,:2]
+        gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
+        
+        plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 0,'Gaussian Mixture')
+        X = np.vstack((samples[:,0],samples[:,2])).T
+        gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
+        plot_results(X, gmm.predict(X), gmm.means_, gmm.covariances_, 1,'Gaussian Mixture')
